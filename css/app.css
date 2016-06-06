@@ -1,0 +1,28 @@
+#studentForm > div {
+  padding: 0;
+}
+
+#studentList a {
+  margin-left: 1em;
+}
+
+#studentList li:first-child a.moveUp,
+#studentList li:last-child a.moveDown{
+  color: #ddd;
+  cursor: not-allowed;
+
+}
+
+span.actions {
+  display: inline-block;
+  float: right;
+}
+
+span.studentName{
+  display: inline-block;
+  width: 15em;
+}
+
+span[contenteditable = true]{
+  border: 1px solid #ccc;
+}

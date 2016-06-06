@@ -1,0 +1,41 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaRoster!</title>
+    <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/app.css">
+  </head>
+  <body>
+    <div class="row">
+      <div class="medium-offset-2 medium-8 columns">
+        <h2>MegaRoster</h2>
+        <form id="studentForm">
+          <div class="small-9 columns">
+            <input type="text"
+                   name="studentName"
+                   placeholder="Enter student name"
+                   required>
+          </div>
+          <div class="small-3 columns">
+            <button type="submit" class="button expanded">Add Student</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="medium-8 medium-offset-2 columns">
+        <ul class="no-bullet" id="studentList"></ul>
+      </div>
+    </div>
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/vendor/what-input.js"></script>
+    <script src="js/vendor/foundation.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
