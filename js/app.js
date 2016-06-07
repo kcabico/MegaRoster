@@ -1,90 +1,138 @@
 $(document).foundation()
 
 var megaRoster = {
+  students: [],
+  max: 0,
+
   init: function(listSelector) {
     this.studentList = document.querySelector(listSelector);
+    this.listItemTemplate = this.studentList.querySelector('li.template');
+    this.listItemTemplate.remove();
     this.setupEventListeners();
-    this.count = 0;
+    this.load();
+  },
+
+  load: function(){
+    try{
+      var storedRoster = localStorage.getItem('roster');
+      if(storedRoster){
+        JSON.parse(storedRoster).map(function(student){
+          this.addStudent(student, true);
+        }.bind(this));
+      }
+    }
+    catch(err){
+      return false;
+    }
+  },
+
+  save: function(){
+    try{
+      localStorage.setItem('roster', JSON.stringify(this.students));
+    }
+    catch(err){
+      return flase;
+    }
+  },
+
+  setupTemplates: function(){
+    this.studentItemTemplate = this.studentList.querySelector('.student.template');
+    this.studentItemTemplate.remove();
   },
 
   setupEventListeners: function() {
-    document.querySelector('form#studentForm').onsubmit = this.addStudent.bind(this);
+    document.querySelector('form#student_form').onsubmit = this.addStudentViaForm.bind(this);
   },
 
-  addStudent: function(ev) {
+  addStudentViaForm: function(ev) {
     ev.preventDefault();
     var f = ev.currentTarget;
-    var studentName = f.studentName.value;
-    var listItem = this.buildListItem(studentName);
+    this.addStudent({
+      id: (this.max + 1),
+      name: f.studentName.value
+    });
+    var listItem = this.buildListItem(student);
 
-    // studentList.appendChild(listItem);
+    var span = document.createElement('span');
+    listItem.className += 'clearfix';
+    span.innerText = studentName;
+    span.className = 'student-name';
+    listItem.appendChild(span);
+    this.students.unshift(student)
     this.prependChild(this.studentList, listItem);
-
-    f.reset();
-    this.count += 1;
-
-    f.studentName.focus();
   },
 
   prependChild: function(parent, child) {
     parent.insertBefore(child, parent.firstChild);
   },
 
-  buildListItem: function(studentName) {
-    var listItem = document.createElement('li');
-    var span = document.createElement('span');
-    listItem.className += 'clearfix';
-    span.innerText = studentName;
-    span.className = 'studentName';
+  addStudent: function(student, addToEnd){
+    if(addToEnd){
+      this.students.push(student);
+      this.studentList.appendChild(listItem);
+    }
+    else{
+      this.students.unshift(student);
+      this.prependChild(this.studentList, listItem);
+    }
+    this.incrementCounter(student.id);
+    this.save();
+  },
 
-    listItem.appendChild(span);
-    this.appendLinks(listItem);
+  incrementCounter: function(id){
+    if(id > this.max){
+      this.max = id;
+    }
+  },
+
+
+
+  buildListItem: function(studentName) {
+    var listItem = this.listItemTemplate.cloneNode(true);
+    //listItem.querySelector('.student-name').innerText = studentName;
+    listItem.className = listItem.className.replace('hide', '').trim();
+    this.activateLinks(listItem);
 
     return listItem;
   },
 
-  appendLinks: function(listItem){
-    var div = document.createElement('div');
-      div.className += 'actions expanded button-group'
-      div.appendChild(this.buildLink({
-        contents: '<i class="fa fa-pencil">',
-        className: 'edit button',
-        handler: function() {
-          this.toggleEditable(listItem.querySelector('span.studentName'));
-        }.bind(this)
-      }));
-      div.appendChild(this.buildLink({
-        contents: '<i class="fa fa-trophy"></i>',
-        className: 'promote warning button',
-        handler: function() {
-          this.promote(listItem);
-        }.bind(this)
-      }));
-      div.appendChild(this.buildLink({
-        contents: '<i class="fa fa-arrow-circle-up"></i>',
-        className: 'moveUp button',
-        handler: function() {
-          this.moveUp(listItem);
-        }.bind(this)
-      }));
+  activateLinks: function(listItem){
+    listItem.querySelector('a.edit').onclick = this.toggleEditable.bind(this,listItem);
+    listItem.querySelector('a.promote').onclick = this.promote.bind(this, listItem);
+    listItem.querySelector('a.move-up').onclick = this.moveUp.bind(this, listItem);
+    listItem.querySelector('a.move-down').onclick = this.moveDown.bind(this, listItem);
+    listItem.querySelector('a.remove').onclick = this.removeStudent.bind(this, listItem);
 
-    div.appendChild(this.buildLink({
-      contents: '<i class="fa fa-arrow-circle-down"></i>',
-      className: 'moveDown button',
-      handler: function() {
-        this.moveDown(listItem);
-      }.bind(this)
-    }));
+    listItem.querySelector('form').onsubmit = this.saveStudent.bind(this, listItem);
+    listItem.querySelector('button.cancel').onclick = this.toggleEditable.bind(this,listItem)
+  },
 
-    div.appendChild(this.buildLink({
-      contents: '<i class="fa fa-trash"></i>',
-      className: 'delete alert button',
-      handler: function(){
-        listItem.remove();
+  findStudentFromItem: function(item){
+    var student;
+    this.students.map(function(s){
+      if(s.id == item.getAttribute('data-id')){
+        student = s;
       }
-    }));
-    listItem.appendChild(div);
+    });
+    return student;
+  },
 
+  removeStudent: function(listItem, ev){
+    if(ev){ev.preventDefault();}
+    var id = listItem.getAttribute('data-id');
+    this.students = this.students.flter(function(student){
+      return student.id != id;
+    });
+    listItem.remove();
+  },
+
+  saveStudent: function(listItem, ev){
+    if(ev) {ev.preventDefault();}
+    var studentName = listItem.querySelector('form').studentName.value;
+    this.findStudentFromItem(listItem).name = studentName;
+    this.toggleEditabe(listItem);
+    listItem.querySelector('.editable').innerText = studentName;
+    this.save();
   },
 
   buildLink: function(options) {
@@ -107,37 +155,48 @@ var megaRoster = {
     return (listItem === this.studentList.lasElementChild);
   },
 
-  toggleEditable: function(el){
-    var toggleElement = el.parentElement.querySelector('a.edit');
-    if(el.contentEditable === 'true'){
-      el.contentEditable ='false';
-      toggleElement.className = toggleElement.className.replace('success', '').trim();
-      toggleElement.innerHTML = '<i class="fa fa-pencil"></i>';
+  toggleEditable: function(listItem, ev){
+    if(ev){ev.preventDefault();}
+    var el = listItem.querySelector('.editable');
+    var actions = listItem.querySelector('.actions');
+    var editForm = listItem.querySelector('form');
+    if(editForm.className.indexOf('hide') >= 0){
+      editForm.studentName.value = el.innerText;
+      this.addClassName(el, 'hide');
+      this.addClassName(action, 'hide');
+      editForm.studentName.select();
     }
-    else{
-      el.contentEditable = 'true';
-      el.focus();
-      toggleElement.className += ' success'
-      toggleElement.innerHTML = '<i class="fa fa-check"></i>';
-    }
+    this.addClassName(editFrom, 'hide')
+    this.removeClassName(el, 'hide');
+    this.removeClassName(actions, 'hide');
   },
 
-  promote: function(listItem){
-    this.prependChild(this.studentList,listItem);
+  promote: function(listItem, ev){
+    var student = this.findStudentFromItem(listItem);
+    if(student){
+      student.promoted = !student.promoted;
+    };
+    this.toggleClassName(listItem, 'promoted');
+    this.save();
   },
 
-  moveUp: function(listItem){
+  moveUp: function(listItem, ev){
+    if(ev) {ev,preventDefault();}
+    var oldIndex = this.student.indexOf(student);
+    this.student.splice(oldIndex -1, 0, this.students.splice(oldIndex, 1)[0]);
     if(listItem !== this.studentList.firstElementChild){
       var previousItem = listItem.previousElementSibling;
       this.studentList.insertBefore(listItem, previousItem);
     }
+    this.save();
   },
 
-  moveDown: function(listItem){
+  moveDown: function(listItem, ev){
+    if(ev){ev.preventDefault();}
     if(listItem !== this.studentList.lastElementChild){
       this.moveUp(listItem.nextElementSibling);
   }
   },
 
 };
-megaRoster.init('#studentList');
+megaRoster.init('#student_list');

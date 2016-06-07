@@ -1,28 +1,49 @@
-#studentForm > div {
+#student_form > div {
   padding: 0;
-}
-
-#studentList a {
-  margin-left: 1em;
-}
-
-#studentList > li:first-child a.moveUp,
-#studentList > li:last-child a.moveDown{
-  background-color: #ddd;
-  color: #eee;
-  cursor: not-allowed;
-
 }
 
 .actions {
   float: right;
+  transition: 0.3s;
+  opacity: 0;
+  margin-bottom: 0;
 }
 
-span.studentName{
-  display: inline-block;
-  width: 15em;
+.student {
+  border: 1px solid #ddd;
+  height: 4rem;
+  padding: .75rem 1.25rem;
+  margin-bottom: -1px;
+  transition: 0.15s;
+}
+.student:first-child a.move-up,
+.student:last-child a.move-down {
+  background-color: #ddd;
+  color: #eee;
+  cursor: not-allowed;
+  /*pointer-events: none;*/
 }
 
-span[contenteditable = true]{
+.student:hover .actions {
+  opacity: 1;
+}
+
+.student .input-group {
+  margin-bottom: 0;
+}
+
+.student.promoted {
+  background-color: #FFC656;
+  border-color: #FFA807;
+}
+
+span.student-name {
+  line-height: 38px;
+  padding: 1px;
+}
+
+.student input[name=studentName] {
   border: 1px solid #ccc;
+  line-height: inherit;
+  padding: 0;
 }
