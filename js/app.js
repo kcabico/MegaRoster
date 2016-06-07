@@ -33,6 +33,7 @@ var megaRoster = {
   buildListItem: function(studentName) {
     var listItem = document.createElement('li');
     var span = document.createElement('span');
+    listItem.className += 'clearfix';
     span.innerText = studentName;
     span.className = 'studentName';
 
@@ -43,50 +44,46 @@ var megaRoster = {
   },
 
   appendLinks: function(listItem){
-    var span = document.createElement('span');
-    span.className += 'actions'
-    var removeLink = this.buildLink({
-      contents: '<i class="fa fa-trash" aria-hidden="true"></i>',
-      handler: function() {
-        listItem.remove();
-      }
-    });
-    var promoteLink = this.buildLink({
-      contents: ' <i class="fa fa-trophy" aria-hidden="true"></i>',
-      handler: function() {
-        this.promote(listItem);
-      }.bind(this)
-    });
+    var div = document.createElement('div');
+      div.className += 'actions expanded button-group'
+      div.appendChild(this.buildLink({
+        contents: '<i class="fa fa-pencil">',
+        className: 'edit button',
+        handler: function() {
+          this.toggleEditable(listItem.querySelector('span.studentName'));
+        }.bind(this)
+      }));
+      div.appendChild(this.buildLink({
+        contents: '<i class="fa fa-trophy"></i>',
+        className: 'promote warning button',
+        handler: function() {
+          this.promote(listItem);
+        }.bind(this)
+      }));
+      div.appendChild(this.buildLink({
+        contents: '<i class="fa fa-arrow-circle-up"></i>',
+        className: 'moveUp button',
+        handler: function() {
+          this.moveUp(listItem);
+        }.bind(this)
+      }));
 
-    var moveUpLink = this.buildLink({
-      contents: '<i class="fa fa-arrow-circle-up" aria-hidden="true"></i>',
-      className: 'moveUp',
-      handler: function() {
-        this.moveUp(listItem);
-      }.bind(this)
-    });
-
-    var moveDownLink = this.buildLink({
-      contents: '<i class="fa fa-arrow-circle-down" aria-hidden="true"></i>',
-      className: 'moveDown',
+    div.appendChild(this.buildLink({
+      contents: '<i class="fa fa-arrow-circle-down"></i>',
+      className: 'moveDown button',
       handler: function() {
         this.moveDown(listItem);
       }.bind(this)
-    });
-
-    span.appendChild(this.buildLink({
-      contents: '<i class="fa fa-pencil-square" aria-hidden="true"></i>',
-      className: 'edit',
-      handler: function(){
-        this.toggleEditable(listItem.querySelector('span.studentName'));
-      }.bind(this)
-
     }));
-    span.appendChild(removeLink);
-    span.appendChild(promoteLink);
-    span.appendChild(moveUpLink);
-    span.appendChild(moveDownLink);
-    listItem.appendChild(span);
+
+    div.appendChild(this.buildLink({
+      contents: '<i class="fa fa-trash"></i>',
+      className: 'delete alert button',
+      handler: function(){
+        listItem.remove();
+      }
+    }));
+    listItem.appendChild(div);
 
   },
 
@@ -114,12 +111,14 @@ var megaRoster = {
     var toggleElement = el.parentElement.querySelector('a.edit');
     if(el.contentEditable === 'true'){
       el.contentEditable ='false';
-      toggleElement.innerHTML = 'edit';
+      toggleElement.className = toggleElement.className.replace('success', '').trim();
+      toggleElement.innerHTML = '<i class="fa fa-pencil"></i>';
     }
     else{
       el.contentEditable = 'true';
       el.focus();
-      toggleElement.innerHTML = 'save';
+      toggleElement.className += ' success'
+      toggleElement.innerHTML = '<i class="fa fa-check"></i>';
     }
   },
 
